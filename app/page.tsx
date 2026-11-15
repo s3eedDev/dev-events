@@ -15,9 +15,10 @@ const Page = async () => {
 cacheLife('hours')
 
     const response = await fetch(`${BASE_URL}/api/events`);
-    const events: IEvent[] = response.ok
-        ? ((await response.json()).events ?? [])
-        : [];
+    if (!response.ok) {
+        throw new Error(`Failed to fetch events (status ${response.status})`);
+    }
+    const events: IEvent[] = (await response.json()).events ?? [];
 
     after(() => {
         eventCatalogLogger?.emit({

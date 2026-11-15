@@ -20,8 +20,8 @@ const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => (
     <div className="agenda">
         <h2>Agenda</h2>
         <ul>
-            {agendaItems.map((item) => (
-                <li key={item}>{item}</li>
+            {agendaItems.map((item, index) => (
+                <li key={`${item}-${index}`}>{item}</li>
             ))}
         </ul>
     </div>
@@ -40,7 +40,8 @@ const EventDetails = async ({ params }: { params: Promise<{ slug: string }> }) =
 
     const { slug } = await params;
     const request = await fetch(`${BASE_URL}/api/events/${slug}`);
-    if (!request.ok) return notFound();
+    if (request.status === 404) return notFound();
+    if (!request.ok) throw new Error(`Failed to load event "${slug}" (status ${request.status})`);
 
     const { event } = await request.json();
     if (!event?.description) return notFound();
@@ -98,7 +99,7 @@ const EventDetails = async ({ params }: { params: Promise<{ slug: string }> }) =
                             <p className="text-sm">Be the first to book your spot!</p>
                         )}
 
-                        <BookEvent/>
+                        <BookEvent eventId={String(event._id)} />
                     </div>
                 </aside>
             </div>

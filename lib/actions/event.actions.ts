@@ -5,7 +5,7 @@ import connectToDatabase from '@/lib/mongodb';
 
 export const getSimilarEventBySlug = async (slug: string) => {
     try {
-        connectToDatabase();
+        await connectToDatabase();
         const event = await Event.findOne({ slug });
         if (!event) return [];
 

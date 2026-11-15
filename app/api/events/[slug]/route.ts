@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
-import Event, { type IEvent } from "@/database/event.model";
+import Event, { type IEvent, MAX_SLUG_LENGTH } from "@/database/event.model";
 
 /** Route context: in this Next.js version `params` is a Promise. */
 interface RouteContext {
@@ -13,7 +13,6 @@ type EventError = { message: string };
 
 /** Slugs are lowercase alphanumerics separated by single hyphens (matches the model's slugify). */
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const MAX_SLUG_LENGTH = 200;
 
 /**
  * Normalizes and validates a raw slug param.
