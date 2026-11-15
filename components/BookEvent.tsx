@@ -1,30 +1,31 @@
 "use client";
 
-import { useState } from "react"
 import { createBooking } from "@/lib/actions/booking.actions";
+import posthog from "posthog-js";
+import { useState } from "react"
 
-const BookEvent = ({ eventId }: { eventId: string }) => {
+const BookEvent = ({ eventId, slug }: { eventId: string, slug: string }) => {
 
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (submitting) return;
+        const { success } = await createBooking({ eventId, slug, email });
 
-        setSubmitting(true);
-        setError('');
-        try {
-            const result = await createBooking(eventId, email);
-            if (result.success) setSubmitted(true);
-            else setError(result.message);
-        } catch {
-            setError('Booking failed. Please try again.');
-        } finally {
-            setSubmitting(false);
+        if(success){
+            setSubmitted(true);
+            posthog.capture('event_booked', {eventId, slug, email})
+        } else {
+            console.error("Booking creation failed")
+            posthog.captureException("Booking creation failed")
         }
+
+        e.preventDefault();
+
+        setTimeout( () => {
+            setSubmitted(true);
+        }, 1000)
     }
 
     return (
@@ -39,15 +40,10 @@ const BookEvent = ({ eventId }: { eventId: string }) => {
                         type="email" value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         id="email"
-                        required
                         placeholder="Enter Your Email Address"/>
                     </div>
 
-                    {error && <p className="text-sm" role="alert">{error}</p>}
-
-                    <button type="submit" className="button-submit" disabled={submitting}>
-                        {submitting ? 'Submitting...' : 'Submit'}
-                    </button>
+                    <button type="submit" className="button-submit">Submit</button>
                 </form>
             )}
         </div>

@@ -1,29 +1,16 @@
-"use server";
+'use server';
 
-import { isValidObjectId } from "mongoose";
-import Booking from "@/database/booking.model";
-import connectToDatabase from "@/lib/mongodb";
+import { Booking } from "@/database/booking.model";
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import connectToDatabase from "../mongodb";
 
-export type BookingResult = { success: true } | { success: false; message: string };
-
-/** Creates a booking for an event after validating the event id and email. */
-export const createBooking = async (eventId: string, email: string): Promise<BookingResult> => {
-    const cleanEmail = typeof email === "string" ? email.trim() : "";
-    if (!cleanEmail || !EMAIL_REGEX.test(cleanEmail)) {
-        return { success: false, message: "A valid email address is required." };
-    }
-    if (typeof eventId !== "string" || !isValidObjectId(eventId)) {
-        return { success: false, message: "Invalid event." };
-    }
-
+export const createBooking = async ({ eventId, slug, email}: {eventId: string; slug: string; email: string;}) => {
     try {
         await connectToDatabase();
-        await Booking.create({ eventId, email: cleanEmail });
+        await Booking.create({ eventId, slug, email });
         return { success: true };
-    } catch (error) {
-        console.error("createBooking failed:", error);
-        return { success: false, message: "Booking failed. Please try again." };
+    } catch (e) {
+        console.error('create booking failed', e);
+        return { success: false }
     }
-};
+}
