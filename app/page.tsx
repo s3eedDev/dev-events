@@ -3,11 +3,23 @@ import { after } from "next/server";
 import ExploreBtn from "@/components/ExploreBtn";
 import EventCard from "@/components/EventCard";
 import { posthogLoggerProvider } from "@/instrumentation";
-import {events} from "@/lib/constants";
+import { IEvent } from "@/database";
+import { cacheLife } from "next/cache";
+
 
 const eventCatalogLogger = posthogLoggerProvider?.getLogger("posthog-event-catalog");
 
-const Page = () => {
+const BASE_URL= process.env.NEXT_PUBLIC_BASE_URL;
+const Page = async () => { 
+    'use cache';
+cacheLife('hours')
+
+    const response = await fetch(`${BASE_URL}/api/events`);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch events (status ${response.status})`);
+    }
+    const events: IEvent[] = (await response.json()).events ?? [];
+
     after(() => {
         eventCatalogLogger?.emit({
             body: "event_catalog_rendered",
@@ -30,7 +42,7 @@ const Page = () => {
                 <h3>Featured Events</h3>
 
                 <ul className="events">
-                    {events.map((event) => (
+                    {events && events.length > 0 && events.map((event: IEvent) => (
                         <li key={event.title}>
                         <EventCard {...event}/>
                         </li>

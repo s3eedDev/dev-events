@@ -53,6 +53,9 @@ const eventSchema = new Schema<IEvent>(
   { timestamps: true }, // manages createdAt / updatedAt automatically
 );
 
+/** Maximum generated slug length; the slug route accepts exactly this many characters. */
+export const MAX_SLUG_LENGTH = 200;
+
 /** Converts a title into a URL-friendly slug, e.g. "Next.js Conf 2025!" -> "next-js-conf-2025". */
 function slugify(title: string): string {
   return title
@@ -61,7 +64,9 @@ function slugify(title: string): string {
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "") // strip diacritics
     .replace(/[^a-z0-9]+/g, "-") // collapse non-alphanumerics into hyphens
-    .replace(/^-+|-+$/g, ""); // trim leading/trailing hyphens
+    .replace(/^-+|-+$/g, "") // trim leading/trailing hyphens
+    .slice(0, MAX_SLUG_LENGTH) // keep in sync with the GET /api/events/[slug] validator
+    .replace(/-+$/g, ""); // truncation may leave a trailing hyphen
 }
 
 /** Normalizes a parseable date string to ISO calendar format (YYYY-MM-DD). */

@@ -28,10 +28,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={cn("min-h-screen", "antialiased", schibstedGrotesk.variable, martianMono.variable, "font-sans", geist.variable)}
     >
-
-      <NavBar/>
-    
       <body className="min-h-full flex flex-col">
+      <NavBar/>
       <div className="absolute inset-0 top-0 z-[-1] min-h-screen">
         <LightRays
           raysOrigin="top-center"
